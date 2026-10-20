@@ -1,0 +1,18 @@
+# macOS metadata
+.DS_Store
+._*
+
+# Generated builds and local task data
+.build/
+dist/
+Nightshift Data/
+Caffeine Data/
+test-runtime/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Local agent configuration
+.codex/
+.claude/

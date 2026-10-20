@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nightshift — Agent Detection</title>
+<style>
+body{font:16px system-ui;max-width:800px;margin:60px auto;padding:0 24px;line-height:1.65;color:#202b43;background:#f7f8fc}h1{font-size:38px;margin-bottom:0}h2{margin-top:36px}code,pre{background:#e9edf6;padding:3px 7px;border-radius:6px}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:20px}.note{border-left:4px solid #c89525;padding:12px 20px;background:#fff7de}li{margin:10px 0}img{width:112px;height:112px}
+</style>
+<img src="NightshiftIcon.png" alt="Nightshift owl mascot">
+<h1>Nightshift</h1>
+<p><strong>Keep your Mac awake while your agents work.</strong></p>
+<p>Nightshift has built-in detection for Claude Code and Codex across compatible terminal, editor, and desktop hosts. ClaudeBar does not need to be installed or running. Your display can still sleep.</p>
+<h2>Enable agent detection</h2>
+<ol>
+<li>Click the menu bar owl and choose <strong>Agent Detection → Set up agent detection…</strong>, then <strong>Enable Detection</strong>.</li>
+<li>Restart your agent sessions. In Codex, run <code>/hooks</code> and review/trust the new Nightshift hooks.</li>
+<li>Start a task. Open <strong>Status &amp; details…</strong> to see the last received event, task counts, and wakefulness state.</li>
+</ol>
+<p>Setup requires Python 3, backs up configuration, and preserves existing hooks, including ClaudeBar hooks. Each runtime must load its configured hooks. A host with its own configuration home needs separate setup.</p>
+<p>For command-line setup, run the bundled installer:</p>
+<pre>python3 /path/to/Nightshift.app/Contents/Resources/configure-hooks.py</pre>
+<p>Use <code>--provider claude</code> or <code>--provider codex</code> to configure one provider. Custom <code>CODEX_HOME</code> and <code>CLAUDE_CONFIG_DIR</code> locations are respected. No API key is needed.</p>
+<h2>One detector across compatible apps</h2>
+<p>Nightshift uses the same approach as ClaudeBar: lifecycle hooks report work and input waits, process checks catch exited agents, and incremental transcript reads recover missed completions and interruptions. The implementation runs inside Nightshift and does not use ClaudeBar's server or saved sessions.</p>
+<p>Claude Code and Codex sessions use the same detection regardless of the host that launches them, provided that host emits the configured lifecycle events. Other agents can send lifecycle JSON to <code>Nightshift --hook PROVIDER</code>; the README documents this local adapter.</p>
+<div class="note"><strong>Coverage:</strong> An open app alone does not prove an agent is running. Runtimes without compatible events need an adapter. Missing starts cannot be inferred from silence. Transcript recovery requires the runtime to supply a supported transcript path. Independent subagents stay active after their parent finishes.</div>
+<h2>Optional additional detector</h2>
+<p>On a Mac with ClaudeBar, enable <strong>Agent Detection → Use ClaudeBar detection (optional)</strong> to include its local activity feed. Nightshift’s built-in detector stays active alongside it. If ClaudeBar is missing, closed, or unreachable, Nightshift continues using its own configured hooks and transcript recovery. Open <strong>Status &amp; details…</strong> for the connection state. Previously reported active work is retained until confirmed finished, its owner exits, or you dismiss it.</p>
+<h2>Daily controls</h2>
+<ul>
+<li><strong style="color:#167a43">Green:</strong> Wakefulness is active and requested closed-lid protection is confirmed.</li>
+<li><strong style="color:#986c09">Yellow:</strong> A task needs input, or power/lid protection needs attention. Read the menu for details.</li>
+<li><strong style="color:#b62c3e">Red:</strong> Nightshift allows normal sleep; other apps may still prevent it.</li>
+</ul>
+<p>Use <strong>Tasks</strong> for task details and dismissing stale records, <strong>Wakefulness</strong> for pause/resume and the one-hour override, and <strong>Agent Detection</strong> for setup and event status. Add Nightshift in macOS Login Items to start it at login. Quit releases its ordinary sleep-prevention assertion.</p>
+<h2>Closed-lid protection</h2>
+<p>Keeping an open-lid Mac awake needs no privileged helper. To continue work with the lid closed, install the optional helper from your normal account:</p>
+<pre>sudo /bin/bash /path/to/Nightshift.app/Contents/Resources/install-lid-helper.sh</pre>
+<p>During a running task, confirm <strong>Closed lid: protected — verified by macOS</strong>. Test actual lid-close behavior on your hardware. The helper restores the original power setting when work finishes, Nightshift pauses or quits, its process dies, or its heartbeat expires. Protection is released at or below 15% battery.</p>
+<div class="note">The helper uses an undocumented global macOS setting that also blocks explicit Sleep while held. Other utilities changing that setting can conflict. Hardware behavior requires live verification. Closed-lid protection is requested by default; disable it under Wakefulness if you only want open-lid prevention.</div>
+<p>To restore the saved setting and remove the helper:</p>
+<pre>sudo /bin/bash /path/to/Nightshift.app/Contents/Resources/uninstall-lid-helper.sh</pre>
+<h2>Local data and removal</h2>
+<p>Nightshift stores sanitized task state, process identities, transcript paths, and preferences in <code>Nightshift Data</code> beside the bundle. Transcript content is read locally for recovery and is not retained. Built-in detection uses no network service. The optional legacy ClaudeBar feed is off by default for new configurations.</p>
+<p>Keep the bundle at a stable writable location. If you move it, rerun setup. For a custom data directory, pass the same <code>--data /absolute/path</code> to the app and hook installer.</p>
+<p>To remove Nightshift's hooks while preserving all other hooks:</p>
+<pre>python3 /path/to/Nightshift.app/Contents/Resources/configure-hooks.py --remove</pre>
+</html>
